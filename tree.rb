@@ -15,17 +15,6 @@ class Tree
 	c
   end
 
-  # Makes a depth-first search in the tree, printing it
-  #def depth
-  #  print '(', @type
-#	
-#	@children.each do |child|
-#	  child.depth
-#	end
-#
-#	print ')'
-#  end
-
   # Makes a depth-first search in the tree, executing blocks
   def depth param, before, after
     before.call self, param
@@ -45,7 +34,6 @@ class Tree
   end
 
   def sentence
-  #  build_sentence([])
     before = lambda { |tree, p| p << tree.type if tree.children.empty? }
     after = lambda { |tree, p| p }
 
