@@ -1,0 +1,22 @@
+# Exercício 1
+
+1. Parsear as árvores dadas no corpus e armazená-las em memória.
+
+2. Sortear uma fração dessas árvores para treino e teste.
+
+3. Extrair uma gramática a partir das representações das árvores.
+
+4. Criar um analisador sintático que use o algoritmo de Earley e recebe como entrada uma gramática e uma sentença, retornando as árvores correspondentes caso a sentença seja reconhecida.
+
+5. Criar um script testador que permita rodar o experimento repetidamente, usando uma parte do corpus para gerar a gramática e outra parte para testar as sentenças.
+
+6. Medir a precisão e a cobertura em cada experimento.
+
+
+# Exercício 2
+
+1. Extrair uma gramática livre de contexto probabilística a partir das representações das árvores.
+
+2. Alterar o analisador sintático de forma que ele compute a árvore mais provável apenas. Usar o algoritmo de Viterbi (cada regra expandida tem probabilidade equivalente a probabilidade da regra mais a probabilidade acumulada dos seus sub-constituintes ou sub-árvores).
+
+3. Calcular a precisão, cobertura e medida F, considerando que a precisão pode ser total ou de parentetização.
