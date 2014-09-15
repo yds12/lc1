@@ -4,7 +4,7 @@ class Tree
 
   def initialize type, father
     @children = []
-	@type = type
+    @type = type
     @father = father
   end
 
@@ -12,16 +12,16 @@ class Tree
   def add_child type
     c = Tree.new type, self
     @children << c
-	c
+    c
   end
 
   # Makes a depth-first search in the tree, executing blocks
   def depth param, before, after
     before.call self, param
 	
-	@children.each do |child|
-	  child.depth param, before, after
-	end
+    @children.each do |child|
+      child.depth param, before, after
+    end
 
     after.call self, param
   end
@@ -30,7 +30,7 @@ class Tree
     before = lambda { |tree, p| print '(', tree.type }
     after = lambda { |tree, p| print ')' }
 
-	depth nil, before, after
+    depth nil, before, after
   end
 
   def sentence
@@ -45,10 +45,10 @@ protected
   def build_sentence sentence
     sentence << type if @children.empty?
 
-	@children.each do |child|
-	  child.build_sentence sentence
-	end
+    @children.each do |child|
+      child.build_sentence sentence
+    end
 
-	sentence
+    sentence
   end
 end
