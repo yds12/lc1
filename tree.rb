@@ -18,7 +18,7 @@ class Tree
   # Makes a depth-first search in the tree, executing blocks
   def depth param, before, after
     before.call self, param
-	
+
     @children.each do |child|
       child.depth param, before, after
     end
@@ -37,7 +37,7 @@ class Tree
     before = lambda { |tree, p| p << tree.type if tree.children.empty? }
     after = lambda { |tree, p| p }
 
-	depth [], before, after
+    depth [], before, after
   end
 
 protected

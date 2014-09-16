@@ -7,11 +7,11 @@ class EarleyState
 
   def initialize rule, start = 0, current = 0, pointers = []
     @rule = rule
-  	@start = start
-  	@current = current
-	  @pointers = pointers
-	
-	  calculate_attrs
+    @start = start
+    @current = current
+    @pointers = pointers
+
+    calculate_attrs
   end
 
   def next_symbol
@@ -85,6 +85,6 @@ class EarleyParser
   def enqueue state, position
     unless @chart[position].map{|s| s.str }.include? state.str
       @chart[position] << state 
-	  end
+    end
   end
 end
