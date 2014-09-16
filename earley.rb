@@ -19,6 +19,18 @@ class EarleyState
     @rule.body[@current - @start]
   end
 
+  def == other
+    @str == other.str
+  end
+
+  def eql? other
+    other.instance_of?(self) && self == other
+  end
+
+  def hash
+    @str.hash
+  end
+
 private
 
   def calculate_attrs
@@ -39,6 +51,7 @@ class EarleyParser
 
   # Parses a sentence, returning all possible parse trees
   def parse sentence
+    t = Time.new # DEBUG
     @n = sentence.size
     @chart = Array.new(@n + 1){ Array.new }
 
@@ -54,6 +67,7 @@ class EarleyParser
       j = 0
 
       while j < @chart[i].size
+        puts j # DEBUG
         if @chart[i][j].complete
           completer @chart[i][j]
         elsif @grammar.pos.include? @chart[i][j].next_symbol
@@ -65,14 +79,15 @@ class EarleyParser
         j += 1
       end
     end
+
+    puts Time.new - t
   end
 
   def predictor state
     rules = @grammar.find_by_head state.next_symbol
-
     rules.each do |r|
-      new_state = EarleyState.new(r, state.start, state.current)
-      @chart[state.current] << new_state
+    new_state = EarleyState.new(r, state.start, state.current)
+    @chart[state.current] << new_state unless @chart[state.current].include? new_state
     end
   end
 

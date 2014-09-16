@@ -4,10 +4,10 @@ require 'set'
 class Grammar
   RootSymbol = '__NEW__ROOT__'
 
-  attr_reader :rules, :pos
+  attr_reader :rules, :pos, :rules_by_head
 
   def initialize
-    @rules = Set.new #[]
+    @rules = Set.new
     @pos = []
   end
   
@@ -19,23 +19,12 @@ class Grammar
   def complete
     lex = @rules.select { |r| r.lexicon }
     @pos = lex.map{ |r| r.head }.uniq
+
+    @rules_by_head = Hash.new { |h, k| h[k] = Array.new }
+    @rules.each { |r| @rules_by_head[r.head] << r }
   end
 
   def find_by_head symbol
-    return @rules.select { |r| r.head == symbol }
-
-    head_found = false
-    rules = []
-
-    @rules.each do |r|
-      if r.head == symbol
-        head_found = true
-        rules << r
-      else
-        break if head_found
-      end
-    end
-    
-    rules
+    @rules_by_head[symbol]
   end
 end
