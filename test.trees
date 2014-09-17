@@ -32,3 +32,75 @@
    )
    (PUNC .)
 )
+
+(S
+	(SUJ 
+		(DET o) 
+		(SUB menino)
+	) 
+	(PRED 
+		(V agiu) 
+		(ADV bem) 
+	) 
+	(PUNC .)
+)
+(S
+  (PRED 
+     (V declamei)
+     (PP 
+        (P contra)
+        (LN
+          (D a) 
+          (N vaidade)
+        )
+      )
+   )
+   (, ,)
+)
+(S2
+  (PRED 
+     (V declamei)
+     (PP 
+        (P contra)
+        (LN
+          (D a) 
+          (N vaidade)
+        )
+      )
+   )
+   (, ,)
+)
+(S2 
+(S
+  (PRED 
+     (V declamei)
+     (PP 
+        (P contra)
+        (LN
+          (D a) 
+          (N vaidade)
+        )
+      )
+   )
+   (, ,)
+))
+(S
+(S2
+  (PRED 
+     (V declamei)
+     (PP 
+        (P contra)
+        (LN
+          (D a) 
+          (N vaidade)
+        )
+      )
+   )
+   (, ,)
+))
+(IP                                                     
+	(VB Declamei)
+	(PP (P contra)
+	    (NP (D a)
+		(N vaidade)))
+	(, ,))

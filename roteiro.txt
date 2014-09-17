@@ -12,6 +12,15 @@
 
 6. Medir a precisão e a cobertura em cada experimento.
 
+## Dificuldades
+
+1. Antes de adicionar as regras na gramática, ela deve ser checada para ver se já existe. Para evitar problemas de performance percorrendo listas, usei a estrutura de dados Set.
+
+2. No algoritmo de Earley, no Predictor, para buscar as regras com um dado Head, foi criado um hash mapeando os heads para as regras, para evitar lentidão.
+
+3. Recursão infinita sendo causada por regras do tipo X ::= X, ou pares do tipo X ::= Y e Y ::= X. Discussão em http://www1.icsi.berkeley.edu/~stolcke/papers/cl95/node20.html. Primeiro caso pode ser resolvido eliminando essas regras, pois são inúteis. O segundo caso é mais complicado, pois não podemos saber qual regra eliminar. Nesse caso, como estados  repetidos não são adicionados, resolve-se esse problema.
+
+4. Não adicionar estados repetidos gera mais uma dificuldade: como representar então todas as possíveis árvores de derivação? A solução que encontrei foi apenas adicionar os ponteiros gerados pelo Completer no estado já existente (no entanto, as infinitas árvores geradas pela recursão não serão representadas, mesmo sendo possíveis, o que pode ser um problema).
 
 # Exercício 2
 

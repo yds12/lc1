@@ -7,12 +7,14 @@ class GrammarGenerator
     g = Grammar.new    
 
     before = lambda do |tree, grammar|
-      rule = GrammarRule.new(
-        tree.type,
-        tree.children.map{|t| t.type},
-        tree.children.size == 1 && tree.children[0].children.empty?)
+      lexicon = tree.children.size == 1 && tree.children[0].children.empty?
+      rule = GrammarRule.new(tree.type, tree.children.map{|t| t.type}, lexicon)
 
-      grammar.add rule unless tree.children.empty?
+      # Bans rules of the kind X ::= X
+      unless tree.children.empty? ||
+        (!lexicon && rule.body.size == 1 && rule.head == rule.body[0])
+        grammar.add rule
+      end
 
       if tree.father.nil?
         rule = GrammarRule.new(

@@ -2,21 +2,22 @@ require './rule.rb'
 
 # Earley algorithm state
 class EarleyState
-  attr_accessor :rule, :start, :current, :pointers
+  attr_accessor :rule, :start, :current, :pointers, :final
   attr_reader :str, :complete
 
-  def initialize rule, start = 0, current = 0, pointers = []
+  def initialize rule, start = 0, final = 0, current = 0, pointers = []
     @rule = rule
     @start = start
     @current = current
     @pointers = pointers
+    @final = final
 
     calculate_attrs
   end
 
   def next_symbol
     return nil if @complete
-    @rule.body[@current - @start]
+    @rule.body[@current]
   end
 
   def == other
@@ -31,11 +32,16 @@ class EarleyState
     @str.hash
   end
 
+  def str_refs
+    @str_refs = 
+      "#{@rule.str} | #{@current} | #{@start}, #{@final}, #{@pointers.to_s}"
+  end
+
 private
 
   def calculate_attrs
-    @str = "#{@rule.str} | #{@start}, #{@current}, [#{@pointers.join(',')}]"
-    @complete = (@current - @start == @rule.body.size)
+    @str = "#{@rule.str} | #{@current} | #{@start}, #{@final}"
+    @complete = (@current == @rule.body.size)
   end
 end
 
@@ -67,11 +73,12 @@ class EarleyParser
       j = 0
 
       while j < @chart[i].size
-        puts j # DEBUG
+        puts "chart #{i} state #{j}" # DEBUG
+
         if @chart[i][j].complete
-          completer @chart[i][j]
+          completer @chart[i][j], j
         elsif @grammar.pos.include? @chart[i][j].next_symbol
-          scanner @chart[i][j]
+          scanner @chart[i][j], sentence[i] unless sentence[i].nil?
         else
           predictor @chart[i][j]
         end
@@ -86,15 +93,47 @@ class EarleyParser
   def predictor state
     rules = @grammar.find_by_head state.next_symbol
     rules.each do |r|
-    new_state = EarleyState.new(r, state.start, state.current)
-    @chart[state.current] << new_state unless @chart[state.current].include? new_state
+    new_state = EarleyState.new(r, state.final, state.final, 0)
+    @chart[state.final] << new_state unless @chart[state.final].include? new_state
     end
   end
 
-  def scanner state
+  def scanner state, word
+    @grammar.rules.each do |r|
+      if r.lexicon and r.body[0] == word.downcase
+        new_state = EarleyState.new(r, state.final, state.final + 1, 1)
+        @chart[state.final + 1] << new_state unless @chart[state.final + 1].include? new_state
+      end
+    end
   end
 
-  def completer state
+  def completer completed_state, completed_state_index
+    @chart[completed_state.start].each do |affected_state|
+      if affected_state.next_symbol == completed_state.rule.head
+        new_state = EarleyState.new(
+          affected_state.rule, affected_state.start,
+          completed_state.final, affected_state.current + 1)
+
+        existing_state_index = @chart[completed_state.final].index(new_state)
+
+        if existing_state_index.nil?
+          pointers = affected_state.pointers.clone
+          pointers << [] if pointers.size < affected_state.current + 1
+
+          pointers[affected_state.current] <<
+            [completed_state.final, completed_state_index]
+
+          new_state.pointers = pointers
+          @chart[completed_state.final] << new_state
+        else
+          old_state = @chart[completed_state.final][existing_state_index]
+          old_state.pointers << [] if old_state.pointers.size < affected_state.current + 1
+
+          old_state.pointers[affected_state.current] <<
+            [completed_state.final, completed_state_index]
+        end
+      end
+    end
   end
 
   def enqueue state, position
