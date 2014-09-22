@@ -110,4 +110,74 @@ class EarleyParser
       end
     end
   end
+
+  # Verifies whether a certain parse tree was accepted by the parser
+  def accept? tree
+    start_state = @chart.last.select do |s|
+      s.rule.head == DummyStartSymbol &&
+        s.start == 0 && s.final == @chart.size - 1
+    end.first
+
+    # The first 2 symbols are dummy symbols created by the
+    # algorithm
+    start_state.pointers[0].each do |p|
+      state = get_state p
+
+      state.pointers[0].each do |p2|
+        state2 = get_state p2
+
+        if recursive_accept? tree, state2
+          return true
+        end
+      end
+    end
+
+    return false
+  end
+
+private
+
+  # Recursively checks whether a tree is possible given an Earley state
+  def recursive_accept? tree, state
+    # If the number of children of the tree is not the same
+    # as the number of symbols in the right side of the rule,
+    # the tree is not accepted
+    return false if state.rule.body.size != tree.children.size
+
+    tree.children.size.times do |i|
+      # If one of the children of the tree is not equal the
+      # matching symbol on the right side of the rule, the
+      # tree is not accepted.
+      # If the rule being checked is one of the lexicon,
+      # and the child matches the symbol on the right of the rule,
+      # then this subtree is accepted
+      if tree.children[i].type.downcase != state.rule.body[i].downcase
+        return false
+      elsif state.rule.lexicon
+        return true
+      end
+
+      accept_sub = false
+
+      # For this particular child (or symbol of the rule),
+      # verifies whether any of the pointers yields an
+      # acceptable subtree
+      state.pointers[i].each do |p|
+        sub_state = get_state p
+
+        if recursive_accept? tree.children[i], sub_state
+          accept_sub = true
+          break
+        end
+      end
+
+      return false unless accept_sub
+    end
+
+    return true
+  end
+
+  def get_state pointer
+    @chart[pointer[0]][pointer[1]]
+  end
 end
