@@ -104,3 +104,23 @@
 	    (NP (D a)
 		(N vaidade)))
 	(, ,))
+(S
+  (FC 
+    (VP
+      (VAUX Podemos)
+      (V resolver)
+    )
+    (OBJ
+      (PRON isso)
+    )
+  )
+  (, ,)
+  (VOC João)
+  (, ,)
+  (ADVF 
+    (CONJ mas)
+    (NAO não)
+    (ADV agora)
+  )
+  (PUNC .)
+)

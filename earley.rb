@@ -3,7 +3,7 @@ require './earley_state.rb'
 
 # Earley parsing algorithm
 class EarleyParser
-  DummyStartSymbol = '__DUMMY__START_SYM__'
+  DummyStartSymbol = '__DUMMY__START__SYM__'
 
   attr_reader :chart
 
@@ -26,11 +26,10 @@ class EarleyParser
     enqueue dummy_state, 0
 
     @chart.size.times do |i|
+      puts "calculating chart #{i}..."
       j = 0
 
       while j < @chart[i].size
-        puts "chart #{i} state #{j}" # DEBUG
-
         if @chart[i][j].complete
           completer @chart[i][j], j
         elsif @grammar.pos.include? @chart[i][j].next_symbol
@@ -43,7 +42,7 @@ class EarleyParser
       end
     end
 
-    puts Time.new - t
+    puts "parsed in #{Time.new - t}s"
 
     return @chart.last.select do |s|
       s.rule.head == DummyStartSymbol && s.start == 0 && s.final == @n 
@@ -99,6 +98,16 @@ class EarleyParser
   def enqueue state, position
     unless @chart[position].map{|s| s.str }.include? state.str
       @chart[position] << state 
+    end
+  end
+
+  def print_chart
+    @chart.size.times do |n|
+      puts nil
+      puts "CHART #{n}"
+      @chart[n].each do |s|
+        puts s.str_refs
+      end
     end
   end
 end

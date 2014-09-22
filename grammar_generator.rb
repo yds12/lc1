@@ -32,11 +32,10 @@ class GrammarGenerator
 
     corpus.trees.each_with_index do |corpus_tree, i|
       corpus_tree.depth g, before, after
-      puts "#{i}/#{corpus.trees.size}"
     end
 
     g.complete
-    puts Time.new - t # DEBUG
+    puts "#{corpus.trees.size} trees extracted in #{Time.new - t}s" # DEBUG
 
     return g
   end

@@ -19,9 +19,9 @@ class Corpus
         raise "Missing token in corpus" unless token
 
         if level == 1
-          tree = Tree.new(token, nil)
+          tree = Tree.new(token.force_encoding("UTF-8"), nil)
         else
-          tree = tree.add_child(token)
+          tree = tree.add_child(token.force_encoding("UTF-8"))
         end
       elsif token == :close
         level -= 1
