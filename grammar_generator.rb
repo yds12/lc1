@@ -3,7 +3,7 @@ require './rule.rb'
 
 # Creates a grammar from a corpus
 class GrammarGenerator
-  def self.generate corpus
+  def self.generate corpus_trees
     g = Grammar.new    
 
     before = lambda do |tree, grammar|
@@ -30,12 +30,12 @@ class GrammarGenerator
 
     t = Time.new # DEBUG
 
-    corpus.trees.each_with_index do |corpus_tree, i|
+    corpus_trees.each_with_index do |corpus_tree, i|
       corpus_tree.depth g, before, after
     end
 
     g.complete
-    puts "#{corpus.trees.size} trees extracted in #{Time.new - t}s" # DEBUG
+    puts "#{corpus_trees.size} trees extracted in #{Time.new - t}s" # DEBUG
 
     return g
   end
