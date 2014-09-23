@@ -4,9 +4,13 @@ require './earley.rb'
 
 CorpusFile = './aires-treino.parsed'
 
+ModeEarley = 0
+ModeProbabilisticEarley = 1
+ModeEarleyCorrectness = 2
+
 def test_earley_correctness
   c = Corpus.new CorpusFile
-  grammar = GrammarGenerator.generate c 
+  grammar = GrammarGenerator.generate c.trees
   p = EarleyParser.new grammar
 
   c.trees.each_with_index.
@@ -76,4 +80,12 @@ def test_earley
   puts "#{avg_precision}\t#{avg_recall}\t#{avg_f}"
 end
 
-test_earley
+mode = ARGV[0].to_i
+
+if mode == ModeEarley
+  test_earley
+elsif mode == ModeEarleyCorrectness
+  test_earley_correctness
+elsif mode == ModeProbabilisticEarley
+
+end
