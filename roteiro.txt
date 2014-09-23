@@ -22,6 +22,10 @@
 
 4. Não adicionar estados repetidos gera mais uma dificuldade: como representar então todas as possíveis árvores de derivação? A solução que encontrei foi apenas adicionar os ponteiros gerados pelo Completer no estado já existente (no entanto, as infinitas árvores geradas pela recursão não serão representadas, mesmo sendo possíveis, o que pode ser um problema).
 
+5. Gerar todas as árvores de parsing para uma sentença parece inviável. Para frase com 5 palavras mais de 400 mil árvores foram geradas.
+
+6. Codificação de caracteres padrão português conflitando com UTF-8 (padrão do Ruby).
+
 # Exercício 2
 
 1. Extrair uma gramática livre de contexto probabilística a partir das representações das árvores.

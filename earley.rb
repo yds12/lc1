@@ -112,7 +112,7 @@ class EarleyParser
   end
 
   # Verifies whether a certain parse tree was accepted by the parser
-  def accept? tree
+  def accepts? tree
     start_state = @chart.last.select do |s|
       s.rule.head == DummyStartSymbol &&
         s.start == 0 && s.final == @chart.size - 1
@@ -145,13 +145,16 @@ private
     return false if state.rule.body.size != tree.children.size
 
     tree.children.size.times do |i|
+      child = tree.children[i].type.downcase
+      symbol = state.rule.body[i].downcase
+
       # If one of the children of the tree is not equal the
       # matching symbol on the right side of the rule, the
       # tree is not accepted.
       # If the rule being checked is one of the lexicon,
       # and the child matches the symbol on the right of the rule,
       # then this subtree is accepted
-      if tree.children[i].type.downcase != state.rule.body[i].downcase
+      if child != symbol
         return false
       elsif state.rule.lexicon
         return true

@@ -3,6 +3,7 @@ require './tree.rb'
 
 # Class that reads a corpus of parse trees
 class Corpus
+  WorkingEncoding = 'UTF-8'
   attr_reader :trees
 
   # Reads the tokens from the corpus and turns them into trees
@@ -18,10 +19,13 @@ class Corpus
         token = t.next
         raise "Missing token in corpus" unless token
 
+        token = token.encode(WorkingEncoding) if
+          token.instance_of? String
+
         if level == 1
-          tree = Tree.new(token.force_encoding("UTF-8"), nil)
+          tree = Tree.new(token, nil)
         else
-          tree = tree.add_child(token.force_encoding("UTF-8"))
+          tree = tree.add_child(token)
         end
       elsif token == :close
         level -= 1
