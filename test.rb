@@ -2,15 +2,12 @@ require './grammar_generator.rb'
 require './corpus.rb' 
 require './earley.rb' 
 
-#CorpusFile = './aires-treino.parsed'
-CorpusFile = './test.trees'
-
 ModeEarley = 0
 ModeProbabilisticEarley = 1
 ModeEarleyCorrectness = 2
 
-def test_earley_correctness
-  c = Corpus.new CorpusFile
+def test_earley_correctness file
+  c = Corpus.new file
   grammar = GrammarGenerator.generate c.trees
   p = EarleyParser.new grammar
 
@@ -26,7 +23,7 @@ def test_earley_correctness
   puts nil
 end
 
-def test_earley
+def test_earley file
   repetitions = 5
   training_frac = 0.80
 
@@ -36,7 +33,7 @@ def test_earley
   training_time = Array.new repetitions
   exec_time = Array.new repetitions
 
-  corpus = Corpus.new CorpusFile
+  corpus = Corpus.new file
   training_last = (corpus.trees.size * training_frac).floor
 
   puts "Testing Earley algorithm..."
@@ -109,11 +106,12 @@ def test_earley
 end
 
 mode = ARGV[0].to_i
+file = ARGV[1]
 
 if mode == ModeEarley
-  test_earley
+  test_earley file
 elsif mode == ModeEarleyCorrectness
-  test_earley_correctness
+  test_earley_correctness file
 elsif mode == ModeProbabilisticEarley
 
 end
