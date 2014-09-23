@@ -5,12 +5,28 @@
 )   
 
 (S
+  (D O)
+  (Sub cão)
+  (Punc .)
+)  
+
+(S
  (. --)
  (VP
    (D O)
    (N menino)
    (V é)
    (ADJ legal)
+ )
+)
+
+(S
+ (. --)
+ (VP
+   (D O)
+   (N cachorro)
+   (V é)
+   (ADJ preto)
  )
 )
 
@@ -31,6 +47,25 @@
        )
    )
    (PUNC .)
+)
+
+(S2
+   (SUJ
+      (DET O)
+      (Sub pássaro)
+   )
+   (PRED
+       (SV
+          (V entrou)
+          (SP
+             (LOC em)
+             (SUJ
+      			(Sub casa)
+             )
+          )
+       )
+   )
+   (PUNC !)
 )
 
 (S
@@ -121,6 +156,26 @@
     (CONJ mas)
     (NAO não)
     (ADV agora)
+  )
+  (PUNC .)
+)
+(S
+  (FC 
+    (VP
+      (VAUX Devemos)
+      (V entender)
+    )
+    (OBJ
+      (PRON isso)
+    )
+  )
+  (, ,)
+  (VOC Maria)
+  (, ,)
+  (ADVF 
+    (CONJ porém)
+    (NAO não)
+    (ADV aqui)
   )
   (PUNC .)
 )

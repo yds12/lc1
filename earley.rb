@@ -25,6 +25,8 @@ class EarleyParser
     dummy_state = EarleyState.new(dummy_rule)
     enqueue dummy_state, 0
 
+    puts "Parsing sentence: #{sentence.to_s}"
+
     @chart.size.times do |i|
       puts "calculating chart #{i}..."
       j = 0
@@ -44,9 +46,17 @@ class EarleyParser
 
     puts "parsed in #{Time.new - t}s"
 
-    return @chart.last.select do |s|
+    recognized = @chart.last.select do |s|
       s.rule.head == DummyStartSymbol && s.start == 0 && s.final == @n 
     end.size == 1
+
+    if recognized
+      puts "recognized" 
+    else
+      puts "not recognized"
+    end
+    
+    return recognized
   end
 
   def predictor state
