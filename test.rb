@@ -5,6 +5,7 @@ require './earley.rb'
 ModeEarley = 0
 ModeProbabilisticEarley = 1
 ModeEarleyCorrectness = 2
+ModeIncrementalEarley = 3
 
 def test_earley_correctness file
   c = Corpus.new file
@@ -105,6 +106,38 @@ def test_earley file
   puts "#{avg_precision}\t#{avg_recall}\t#{avg_f}\t#{avg_training}\t#{avg_exec}"
 end
 
+def test_incremental_earley file
+  corpus = Corpus.new file
+
+  corpus.trees.size.times do |i|
+    puts "Starting iteration #{i + 1}"
+
+    t0 = Time.new
+    grammar = GrammarGenerator.generate corpus.trees[0..i]
+    parser = EarleyParser.new grammar
+
+    tot_rec = 0
+    tot_acc = 0
+
+    (i + 1).times do |j|
+      recognized = parser.parse corpus.trees[j].sentence
+      accepted = false
+      accepted = parser.accepts? corpus.trees[j] if recognized
+
+      if accepted
+        puts "accepted"
+      else
+        puts "not accepted"
+      end
+
+      tot_rec += 1 if recognized
+      tot_acc += 1 if accepted
+    end
+
+    puts "Results of Iteration #{i + 1}: acc/rec/tot #{tot_acc}/#{tot_rec}/#{i + 1}, #{grammar.rules.size} rules, #{'%.3f' % ((Time.new - t0)/(i + 1))}s avg. parse"
+  end
+end
+
 mode = ARGV[0].to_i
 file = ARGV[1]
 
@@ -114,4 +147,6 @@ elsif mode == ModeEarleyCorrectness
   test_earley_correctness file
 elsif mode == ModeProbabilisticEarley
 
+elsif mode == ModeIncrementalEarley
+  test_incremental_earley file
 end

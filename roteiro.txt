@@ -26,6 +26,8 @@
 
 6. Codificação de caracteres padrão português conflitando com UTF-8 (padrão do Ruby).
 
+7. As árvores com regras do tipo X := X não estavam sendo aceitas, pois as regras estão sendo eliminadas.
+
 # Exercício 2
 
 1. Extrair uma gramática livre de contexto probabilística a partir das representações das árvores.

@@ -62,16 +62,16 @@ class EarleyParser
   def predictor state
     rules = @grammar.find_by_head state.next_symbol
     rules.each do |r|
-    new_state = EarleyState.new(r, state.final, state.final, 0)
-    @chart[state.final] << new_state unless @chart[state.final].include? new_state
+      new_state = EarleyState.new r, state.final, state.final, 0
+      enqueue new_state, state.final
     end
   end
 
   def scanner state, word
     @grammar.rules.each do |r|
       if r.lexicon and r.body[0] == word.downcase
-        new_state = EarleyState.new(r, state.final, state.final + 1, 1)
-        @chart[state.final + 1] << new_state unless @chart[state.final + 1].include? new_state
+        new_state = EarleyState.new r, state.final, state.final + 1, 1
+        enqueue new_state, state.final + 1
       end
     end
   end
@@ -83,8 +83,10 @@ class EarleyParser
           affected_state.rule, affected_state.start,
           completed_state.final, affected_state.current + 1)
 
+        # If the new state already exists, save its index
         existing_state_index = @chart[completed_state.final].index(new_state)
 
+        # If the new state don't exist
         if existing_state_index.nil?
           pointers = affected_state.pointers.clone
           pointers << [] if pointers.size < affected_state.current + 1
@@ -94,7 +96,7 @@ class EarleyParser
 
           new_state.pointers = pointers
           @chart[completed_state.final] << new_state
-        else
+        else # new state already exists
           old_state = @chart[completed_state.final][existing_state_index]
           old_state.pointers << [] if old_state.pointers.size < affected_state.current + 1
 
@@ -106,7 +108,7 @@ class EarleyParser
   end
 
   def enqueue state, position
-    unless @chart[position].map{|s| s.str }.include? state.str
+    unless @chart[position].include? state
       @chart[position] << state 
     end
   end
@@ -115,8 +117,8 @@ class EarleyParser
     @chart.size.times do |n|
       puts nil
       puts "CHART #{n}"
-      @chart[n].each do |s|
-        puts s.str_refs
+      @chart[n].each_with_index do |s, i|
+        puts "[#{i}] #{s.str_refs}"
       end
     end
   end
@@ -152,7 +154,9 @@ private
     # If the number of children of the tree is not the same
     # as the number of symbols in the right side of the rule,
     # the tree is not accepted
-    return false if state.rule.body.size != tree.children.size
+    if state.rule.body.size != tree.children.size
+      return false 
+    end
 
     tree.children.size.times do |i|
       child = tree.children[i].type.downcase
@@ -184,7 +188,9 @@ private
         end
       end
 
-      return false unless accept_sub
+      unless accept_sub
+        return false 
+      end
     end
 
     return true

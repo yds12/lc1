@@ -32,10 +32,27 @@ class Corpus
 
         if level == 0
           @trees << tree 
+          check_tree tree
         else
           tree = tree.father
         end
       end
     end
+  end
+
+  def check_tree tree
+    before = lambda do |t, p|
+      # This node has its own type as only child, so we need to set its
+      # grandchildren as its children, and set their father as this node.
+      if t.children.size == 1 && t.children[0].type == t.type &&
+        !t.children[0].children.empty?
+        t.children = t.children[0].children
+        t.children.each { |c| c.father = t }
+      end
+    end
+
+    after = lambda { |t, p| }
+
+    tree.depth nil, before, after
   end
 end
