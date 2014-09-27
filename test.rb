@@ -18,7 +18,7 @@ def test_earley_correctness file, slice_size, slice_number
   start = slice_size * slice_number
   _end = start + slice_size
   
-  sentences[start.._end].each do |i| 
+  sentences[start..._end].each do |i| 
     puts i.to_s
     recognized = p.parse c.trees[i[0]].sentence
 
