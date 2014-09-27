@@ -4,6 +4,10 @@ require './tree.rb'
 # Class that reads a corpus of parse trees
 class Corpus
   WorkingEncoding = 'UTF-8'
+
+  # There are some symbols that are heads of lexicon rules and other rules.
+  # This Hash sets whether a symbol must be part of a lexicon rule.
+  SymbolLex = { "VB" => true, "NP" => false, "WPP" => false }
   attr_reader :trees
 
   # Reads the tokens from the corpus and turns them into trees
@@ -31,8 +35,7 @@ class Corpus
         level -= 1
 
         if level == 0
-          @trees << tree 
-          check_tree tree
+          @trees << tree if check_tree tree
         else
           tree = tree.father
         end
@@ -41,6 +44,8 @@ class Corpus
   end
 
   def check_tree tree
+    exclude_tree = false
+
     before = lambda do |t, p|
       # This node has its own type as only child, so we need to set its
       # grandchildren as its children, and set their father as this node.
@@ -49,10 +54,30 @@ class Corpus
         t.children = t.children[0].children
         t.children.each { |c| c.father = t }
       end
+
+      # Check if this node symbol is present in both lexicon and non lexicon
+      # rules.
+      if SymbolLex.has_key? t.type
+        if SymbolLex[t.type] # lexicon symbol
+          if t.children.size != 1 or !t.children[0].children.empty?
+            exclude_tree = true # remove this tree
+            puts "Tree Removed"
+          end
+        else # non lexicon symbol
+          t.children.each do |c|
+            if c.children.empty?
+              exclude_tree = true
+              puts "Tree Removed"
+              break
+            end
+          end
+        end
+      end
     end
 
     after = lambda { |t, p| }
-
     tree.depth nil, before, after
+
+    return !exclude_tree
   end
 end

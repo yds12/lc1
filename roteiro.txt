@@ -28,6 +28,8 @@
 
 7. As árvores com regras do tipo X := X não estavam sendo aceitas, pois as regras estão sendo eliminadas.
 
+8. Não terminais cabeças de regras do léxico e não léxico. VB: 1430/4, NP: 2/327, WPP: 1/8. Usar apenas um tipo de regra, o que for mais comum.
+
 # Exercício 2
 
 1. Extrair uma gramática livre de contexto probabilística a partir das representações das árvores.
