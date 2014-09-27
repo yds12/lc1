@@ -1,6 +1,6 @@
 # Earley algorithm state
 class EarleyState
-  attr_accessor :rule, :start, :current, :pointers, :final
+  attr_accessor :rule, :start, :current, :pointers, :final, :generated_by
   attr_reader :str, :complete
 
   def initialize rule, start = 0, final = 0, current = 0, pointers = []
@@ -32,7 +32,17 @@ class EarleyState
 
   def str_refs
     @str_refs = 
-      "#{@rule.str} | #{@current} | #{@start}, #{@final}, #{@pointers.to_s}"
+      "#{@rule.str} | #{@current} | #{@start}, #{@final}, #{str_pointers}"
+  end
+  
+  def str_pointers
+    str = ""
+
+    @pointers.each do |p|
+      str << "[" << p.to_a.to_s << "]"
+    end
+
+    str
   end
 
 private

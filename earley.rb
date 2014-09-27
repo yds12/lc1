@@ -1,3 +1,4 @@
+require 'set'
 require './rule.rb'
 require './earley_state.rb'
 
@@ -63,6 +64,7 @@ class EarleyParser
     rules = @grammar.find_by_head state.next_symbol
     rules.each do |r|
       new_state = EarleyState.new r, state.final, state.final, 0
+      new_state.generated_by = :predictor
       enqueue new_state, state.final
     end
   end
@@ -71,6 +73,7 @@ class EarleyParser
     @grammar.rules.each do |r|
       if r.lexicon and r.body[0] == word.downcase
         new_state = EarleyState.new r, state.final, state.final + 1, 1
+        new_state.generated_by = :scanner
         enqueue new_state, state.final + 1
       end
     end
@@ -82,14 +85,21 @@ class EarleyParser
         new_state = EarleyState.new(
           affected_state.rule, affected_state.start,
           completed_state.final, affected_state.current + 1)
+        new_state.generated_by = :completer
 
         # If the new state already exists, save its index
         existing_state_index = @chart[completed_state.final].index(new_state)
 
         # If the new state don't exist
         if existing_state_index.nil?
-          pointers = affected_state.pointers.clone
-          pointers << [] if pointers.size < affected_state.current + 1
+          pointers = []
+
+          # Copies the pointers of the affected state
+          affected_state.pointers.size.times do |i|
+            pointers[i] = affected_state.pointers[i].clone
+          end
+
+          pointers << Set.new if pointers.size < affected_state.current + 1
 
           pointers[affected_state.current] <<
             [completed_state.final, completed_state_index]
@@ -98,7 +108,12 @@ class EarleyParser
           @chart[completed_state.final] << new_state
         else # new state already exists
           old_state = @chart[completed_state.final][existing_state_index]
-          old_state.pointers << [] if old_state.pointers.size < affected_state.current + 1
+          old_state.pointers << Set.new if old_state.pointers.size < affected_state.current + 1
+
+          # Adds the pointers of the affected state to the existing state
+          affected_state.pointers.size.times do |i|
+            old_state.pointers[i] += affected_state.pointers[i]
+          end
 
           old_state.pointers[affected_state.current] <<
             [completed_state.final, completed_state_index]

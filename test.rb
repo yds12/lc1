@@ -7,19 +7,30 @@ ModeProbabilisticEarley = 1
 ModeEarleyCorrectness = 2
 ModeIncrementalEarley = 3
 
-def test_earley_correctness file
+def test_earley_correctness file, slice_size, slice_number
   c = Corpus.new file
   grammar = GrammarGenerator.generate c.trees
   p = EarleyParser.new grammar
 
-  c.trees.each_with_index.
-    map{|t,i| [i] + t.sentence }.
-    sort{|x,y| x.size <=> y.size }.
-    each do |i| 
-      puts i.to_s
-      result = p.parse c.trees[i[0]].sentence
-      puts result
+  sentences = c.trees.each_with_index.
+    map{|t,i| [i] + t.sentence }
+
+  start = slice_size * slice_number
+  _end = start + slice_size
+  
+  sentences[start.._end].each do |i| 
+    puts i.to_s
+    recognized = p.parse c.trees[i[0]].sentence
+
+    accepted = false
+    accepted = p.accepts? c.trees[i[0]] if recognized
+
+    if accepted
+      puts "accepted" 
+    else
+      puts "not accepted" 
     end
+  end
 
   puts nil
 end
@@ -144,7 +155,9 @@ file = ARGV[1]
 if mode == ModeEarley
   test_earley file
 elsif mode == ModeEarleyCorrectness
-  test_earley_correctness file
+  slice_size = ARGV[2].to_i
+  slice_number = ARGV[3].to_i
+  test_earley_correctness file, slice_size, slice_number
 elsif mode == ModeProbabilisticEarley
 
 elsif mode == ModeIncrementalEarley
