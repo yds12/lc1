@@ -23,7 +23,7 @@ class EarleyState
   end
 
   def eql? other
-    other.instance_of?(self) && self == other
+    other.instance_of?(self.class) && self == other
   end
 
   def hash

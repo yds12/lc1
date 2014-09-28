@@ -17,6 +17,7 @@ class EarleyParser
     t = Time.new # DEBUG
     @n = sentence.size
     @chart = Array.new(@n + 1){ Array.new }
+    @set_chart = Array.new(@n + 1){ Set.new }
 
     dummy_rule = GrammarRule.new(
       DummyStartSymbol,
@@ -70,7 +71,7 @@ class EarleyParser
   end
 
   def scanner state, word
-    @grammar.rules.each do |r|
+    @grammar.rules.values.each do |r|
       if r.lexicon and r.body[0] == word.downcase
         new_state = EarleyState.new r, state.final, state.final + 1, 1
         new_state.generated_by = :scanner
@@ -123,8 +124,9 @@ class EarleyParser
   end
 
   def enqueue state, position
-    unless @chart[position].include? state
+    unless @set_chart[position].member? state
       @chart[position] << state 
+      @set_chart[position] << state
     end
   end
 

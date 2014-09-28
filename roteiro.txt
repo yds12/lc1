@@ -30,6 +30,8 @@
 
 8. Não terminais cabeças de regras do léxico e não léxico. VB: 1430/4, NP: 2/327, WPP: 1/8. Usar apenas um tipo de regra, o que for mais comum.
 
+9. Na hora de verificar se um estado já existia no chart do Earley, ele estava fazendo uma verificação sequencial numa lista. Passei a usar uma tabela hash auxiliar com os estados, apenas para verificar se o estado foi adicionado. Isso gera um aumento no uso de memória, mas reduz uma operação de O(N) sendo N o número de estados para O(1).
+
 # Exercício 2
 
 1. Extrair uma gramática livre de contexto probabilística a partir das representações das árvores.
