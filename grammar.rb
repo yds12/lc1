@@ -7,21 +7,34 @@ class Grammar
   attr_reader :rules, :pos, :rules_by_head
 
   def initialize
-    @rules = Set.new
+    @rules = Hash.new
     @pos = []
   end
   
   def add rule
-    @rules << rule
+    if @rules[rule]
+      @rules[rule].count += 1
+    else
+      @rules[rule] = rule
+    end
   end
 
   # Call this method after add all rules to calculate the parts of speech
   def complete
-    lex = @rules.select { |r| r.lexicon }
-    @pos = lex.map{ |r| r.head }.uniq
+    lex = @rules.select { |k, v| v.lexicon }
+    @pos = lex.map{ |k, v| v.head }.uniq
 
     @rules_by_head = Hash.new { |h, k| h[k] = Array.new }
-    @rules.each { |r| @rules_by_head[r.head] << r }
+    @rules.each { |k, v| @rules_by_head[v.head] << v }
+
+    heads_totals = Hash.new
+    @rules_by_head.each do |k, rules|
+      heads_totals[k] = rules.inject(0) { |sum, r| sum + r.count }
+    end
+
+    @rules.values.each do |r|
+      r.p = r.count.to_f / heads_totals[r.head]
+    end
   end
 
   def find_by_head symbol

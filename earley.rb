@@ -56,7 +56,7 @@ class EarleyParser
     else
       puts "not recognized"
     end
-    
+
     return recognized
   end
 

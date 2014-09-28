@@ -1,12 +1,13 @@
 # Represents a rule in a context free grammar
 class GrammarRule
-  attr_accessor :head, :body, :p, :lexicon
+  attr_accessor :head, :body, :p, :lexicon, :count
   attr_reader :str
 
   def initialize head, body, lexicon, p=1.0
     @head = head.upcase
     @p = p
     @lexicon = lexicon
+    @count = 1
 
     @body = body.map do |r|
       if @lexicon
