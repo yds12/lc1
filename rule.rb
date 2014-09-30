@@ -4,24 +4,23 @@ class GrammarRule
   attr_reader :str
 
   def initialize head, body, lexicon, p=1.0
-    @head = head.upcase
+    @head = head
     @p = p
     @lexicon = lexicon
     @count = 1
 
-    @body = body.map do |r|
-      if @lexicon
-        r.downcase
-      else
-        r.upcase
-      end
-    end
+    @body = body.clone
 
     generate_str
+    generate_hash
   end
 
   def generate_str
     @str = "#{@head} ::= #{@body.join ' '}"
+  end
+
+  def generate_hash
+    @_hash = @str.hash
   end
 
   def to_s
@@ -29,13 +28,14 @@ class GrammarRule
   end
 
   def == other
-    other.instance_of?(self.class) && @str == other.str
+    other.instance_of?(self.class) && @_hash == other.hash
+      # && @str == other.str
   end
 
   alias_method :eql?, :==
 
   def hash
-    @str.hash
+    @_hash
   end
 
   def <=> other

@@ -7,7 +7,7 @@ class Corpus
 
   # There are some symbols that are heads of lexicon rules and other rules.
   # This Hash sets whether a symbol must be part of a lexicon rule.
-  SymbolLex = { "VB" => true, "NP" => false, "WPP" => false }
+  SymbolLex = { VB: true, NP: false, WPP: false }
   attr_reader :trees
 
   # Reads the tokens from the corpus and turns them into trees
@@ -47,6 +47,21 @@ class Corpus
     exclude_tree = false
 
     before = lambda do |t, p|
+      # Convert all types to symbols
+      if t.children.empty?
+        t.type = t.type.downcase.to_sym if t.type.instance_of? Symbol
+      else
+        t.type = t.type.upcase.to_sym
+
+        t.children.each do |c|
+          if c.children.empty?
+            c.type = c.type.downcase.to_sym
+          else
+            c.type = c.type.upcase.to_sym
+          end
+        end
+      end
+
       # This node has its own type as only child, so we need to set its
       # grandchildren as its children, and set their father as this node.
       if t.children.size == 1 && t.children[0].type == t.type &&

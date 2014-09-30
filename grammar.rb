@@ -2,13 +2,13 @@ require 'set'
 
 # Represents a Probabilistic Context Free Grammar
 class Grammar
-  RootSymbol = '__NEW__ROOT__'
+  RootSymbol = '__NEW__ROOT__'.to_sym
 
   attr_reader :rules, :pos, :rules_by_head
 
   def initialize
     @rules = Hash.new
-    @pos = []
+    @pos = Set.new
   end
   
   def add rule
@@ -21,8 +21,8 @@ class Grammar
 
   # Call this method after add all rules to calculate the parts of speech
   def complete
-    lex = @rules.select { |k, v| v.lexicon }
-    @pos = lex.map{ |k, v| v.head }.uniq
+    lex = @rules.values.select { |r| r.lexicon }
+    @pos.merge lex.map{ |r| r.head }.uniq
 
     @rules_by_head = Hash.new { |h, k| h[k] = Array.new }
     @rules.each { |k, v| @rules_by_head[v.head] << v }

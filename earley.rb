@@ -4,9 +4,9 @@ require './earley_state.rb'
 
 # Earley parsing algorithm
 class EarleyParser
-  DummyStartSymbol = '__DUMMY__START__SYM__'
+  DummyStartSymbol = '__DUMMY__START__SYM__'.to_sym
 
-  attr_reader :chart
+  attr_reader :chart, :waiting
 
   def initialize grammar
     @grammar = grammar
@@ -14,10 +14,11 @@ class EarleyParser
 
   # Parses a sentence, returning all possible parse trees
   def parse sentence
-    t = Time.new # DEBUG
+    t0 = Time.new # DEBUG
     @n = sentence.size
     @chart = Array.new(@n + 1){ Array.new }
-    @set_chart = Array.new(@n + 1){ Set.new }
+    @set_chart = Array.new(@n + 1){ Hash.new }
+    @waiting = Hash.new { |h, k| h[k] = Array.new(@chart.size) { Array.new } }
 
     dummy_rule = GrammarRule.new(
       DummyStartSymbol,
@@ -28,25 +29,27 @@ class EarleyParser
     enqueue dummy_state, 0
 
     puts "Parsing sentence: #{sentence.to_s}"
-
+    
     @chart.size.times do |i|
       puts "calculating chart #{i}..."
       j = 0
 
       while j < @chart[i].size
-        if @chart[i][j].complete
-          completer @chart[i][j], j
-        elsif @grammar.pos.include? @chart[i][j].next_symbol
-          scanner @chart[i][j], sentence[i] unless sentence[i].nil?
+        cur_state = @chart[i][j]
+
+        if cur_state.complete
+          completer cur_state, j
+        elsif @grammar.pos.member? cur_state.next_symbol
+          scanner cur_state, sentence[i] unless sentence[i].nil?
         else
-          predictor @chart[i][j]
+          predictor cur_state
         end
 
         j += 1
       end
     end
 
-    puts "parsed in #{Time.new - t}s"
+    puts "parsed in #{Time.new - t0}s"
 
     recognized = @chart.last.select do |s|
       s.rule.head == DummyStartSymbol && s.start == 0 && s.final == @n 
@@ -59,75 +62,6 @@ class EarleyParser
     end
 
     return recognized
-  end
-
-  def predictor state
-    rules = @grammar.find_by_head state.next_symbol
-    rules.each do |r|
-      new_state = EarleyState.new r, state.final, state.final, 0
-      new_state.generated_by = :predictor
-      enqueue new_state, state.final
-    end
-  end
-
-  def scanner state, word
-    @grammar.rules.values.each do |r|
-      if r.lexicon and r.body[0] == word.downcase
-        new_state = EarleyState.new r, state.final, state.final + 1, 1
-        new_state.generated_by = :scanner
-        enqueue new_state, state.final + 1
-      end
-    end
-  end
-
-  def completer completed_state, completed_state_index
-    @chart[completed_state.start].each do |affected_state|
-      if affected_state.next_symbol == completed_state.rule.head
-        new_state = EarleyState.new(
-          affected_state.rule, affected_state.start,
-          completed_state.final, affected_state.current + 1)
-        new_state.generated_by = :completer
-
-        # If the new state already exists, save its index
-        existing_state_index = @chart[completed_state.final].index(new_state)
-
-        # If the new state don't exist
-        if existing_state_index.nil?
-          pointers = []
-
-          # Copies the pointers of the affected state
-          affected_state.pointers.size.times do |i|
-            pointers[i] = affected_state.pointers[i].clone
-          end
-
-          pointers << Set.new if pointers.size < affected_state.current + 1
-
-          pointers[affected_state.current] <<
-            [completed_state.final, completed_state_index]
-
-          new_state.pointers = pointers
-          @chart[completed_state.final] << new_state
-        else # new state already exists
-          old_state = @chart[completed_state.final][existing_state_index]
-          old_state.pointers << Set.new if old_state.pointers.size < affected_state.current + 1
-
-          # Adds the pointers of the affected state to the existing state
-          affected_state.pointers.size.times do |i|
-            old_state.pointers[i] += affected_state.pointers[i]
-          end
-
-          old_state.pointers[affected_state.current] <<
-            [completed_state.final, completed_state_index]
-        end
-      end
-    end
-  end
-
-  def enqueue state, position
-    unless @set_chart[position].member? state
-      @chart[position] << state 
-      @set_chart[position] << state
-    end
   end
 
   def print_chart
@@ -165,6 +99,85 @@ class EarleyParser
   end
 
 private
+
+  def predictor state
+    rules = @grammar.find_by_head state.next_symbol
+    rules.each do |r|
+      new_state = EarleyState.new r, state.final, state.final, 0
+      new_state.generated_by = :predictor
+      enqueue new_state, state.final
+    end
+  end
+
+  def scanner state, word
+    rules = @grammar.rules.values.select { |r| r.lexicon && r.body[0] == word }
+    rules.each do |r|
+      new_state = EarleyState.new r, state.final, state.final + 1, 1
+      new_state.generated_by = :scanner
+      enqueue new_state, state.final + 1
+    end
+  end
+
+  def completer completed_state, completed_state_index
+    waitings = @waiting[completed_state.rule.head][completed_state.start]
+
+    waitings.each do |affected_state_index|
+      affected_state = @chart[completed_state.start][affected_state_index]
+
+      new_state = EarleyState.new(
+        affected_state.rule, affected_state.start,
+        completed_state.final, affected_state.current + 1)
+      new_state.generated_by = :completer
+
+      # If the new state already exists, save its index
+      existing_state_index = @set_chart[completed_state.final][new_state]
+
+      # If the new state doesn't exist
+      if existing_state_index.nil?
+        pointers = []
+
+        # Copies the pointers of the affected state
+        affected_state.pointers.size.times do |i|
+          pointers[i] = affected_state.pointers[i].clone
+        end
+
+        pointers << Set.new if pointers.size < affected_state.current + 1
+
+        pointers[affected_state.current] <<
+          [completed_state.final, completed_state_index]
+
+        new_state.pointers = pointers
+        #@chart[completed_state.final] << new_state
+        enqueue new_state, completed_state.final
+      else # new state already exists
+        old_state = @chart[completed_state.final][existing_state_index]
+        old_state.pointers << Set.new if old_state.pointers.size < affected_state.current + 1
+
+        # Adds the pointers of the affected state to the existing state
+        affected_state.pointers.size.times do |i|
+          old_state.pointers[i] += affected_state.pointers[i]
+        end
+
+        old_state.pointers[affected_state.current] <<
+          [completed_state.final, completed_state_index]
+      end
+    end
+  end
+
+  def enqueue state, position
+    unless @set_chart[position].member? state
+      @chart[position] << state 
+
+      # Save the index of the state for rapid retrieval
+      @set_chart[position][state] = (@chart[position].size - 1)
+
+      # Adds the index of this state to the list of states
+      # waiting for the symbol given by state.next_symbol
+      unless state.complete
+        @waiting[state.next_symbol][position] << (@chart[position].size - 1)
+      end
+    end
+  end
 
   # Recursively checks whether a tree is possible given an Earley state
   def recursive_accept? tree, state

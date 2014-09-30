@@ -36,8 +36,8 @@ def test_earley_correctness file, slice_size, slice_number
 end
 
 def test_earley file
-  repetitions = 5
-  training_frac = 0.80
+  repetitions = 1
+  training_frac = 0.90
 
   precision = Array.new repetitions
   recall = Array.new repetitions

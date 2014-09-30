@@ -19,7 +19,7 @@ class EarleyState
   end
 
   def == other
-    @str == other.str
+    @_hash == other.hash
   end
 
   def eql? other
@@ -27,7 +27,7 @@ class EarleyState
   end
 
   def hash
-    @str.hash
+    @_hash
   end
 
   def str_refs
@@ -49,6 +49,7 @@ private
 
   def calculate_attrs
     @str = "#{@rule.str} | #{@current} | #{@start}, #{@final}"
+    @_hash = @str.hash
     @complete = (@current == @rule.body.size)
   end
 end
