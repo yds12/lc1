@@ -1,11 +1,13 @@
 require './grammar_generator.rb' 
 require './corpus.rb' 
 require './earley.rb' 
+require './viterbi.rb'
 
 ModeEarley = 0
 ModeProbabilisticEarley = 1
 ModeEarleyCorrectness = 2
 ModeIncrementalEarley = 3
+ModeViterbiCorrectness = 4
 
 def test_earley_correctness file, slice_size, slice_number
   c = Corpus.new file
@@ -149,6 +151,37 @@ def test_incremental_earley file
   end
 end
 
+def test_viterbi_correctness file
+  corpus = Corpus.new file
+  grammar = GrammarGenerator.generate corpus.trees
+  parser = EarleyParser.new grammar
+  viterbi = Viterbi.new
+
+  corpus.trees.sort!{|x,y| x.sentence.size <=> y.sentence.size}
+
+  it = 0
+  correct = 0
+
+  corpus.trees.each do |tree|
+    it += 1
+    puts "Iteration #{it}"
+
+    parser.parse tree.sentence
+    vitree = viterbi.path parser
+
+    if vitree.sentence == tree.sentence
+      correct += 1 
+    else
+      puts "FAIL"
+    end
+
+    vitree.show
+    puts nil
+    puts vitree.sentence.to_s
+    puts "Results: #{correct} of #{it} correct."
+  end
+end
+
 mode = ARGV[0].to_i
 file = ARGV[1]
 
@@ -162,4 +195,6 @@ elsif mode == ModeProbabilisticEarley
 
 elsif mode == ModeIncrementalEarley
   test_incremental_earley file
+elsif mode == ModeViterbiCorrectness
+  test_viterbi_correctness file
 end

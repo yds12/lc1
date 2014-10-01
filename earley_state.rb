@@ -1,6 +1,6 @@
 # Earley algorithm state
 class EarleyState
-  attr_accessor :rule, :start, :current, :pointers, :final, :generated_by
+  attr_accessor :rule, :start, :current, :pointers, :final, :generated_by, :p
   attr_reader :str, :complete
 
   def initialize rule, start = 0, final = 0, current = 0, pointers = []

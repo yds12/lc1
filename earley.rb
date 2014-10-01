@@ -6,7 +6,7 @@ require './earley_state.rb'
 class EarleyParser
   DummyStartSymbol = '__DUMMY__START__SYM__'.to_sym
 
-  attr_reader :chart, :waiting
+  attr_reader :chart, :waiting, :grammar
 
   def initialize grammar
     @grammar = grammar
@@ -51,9 +51,7 @@ class EarleyParser
 
     puts "parsed in #{Time.new - t0}s"
 
-    recognized = @chart.last.select do |s|
-      s.rule.head == DummyStartSymbol && s.start == 0 && s.final == @n 
-    end.size == 1
+    recognized = !get_start_state.nil?
 
     if recognized
       puts "recognized" 
@@ -62,6 +60,14 @@ class EarleyParser
     end
 
     return recognized
+  end
+
+  def get_start_state
+    states = @chart.last.select do |s|
+      s.rule.head == DummyStartSymbol && s.start == 0 && s.final == @n 
+    end
+
+    states.first
   end
 
   def print_chart

@@ -76,13 +76,11 @@ class Corpus
         if SymbolLex[t.type] # lexicon symbol
           if t.children.size != 1 or !t.children[0].children.empty?
             exclude_tree = true # remove this tree
-            puts "Tree Removed"
           end
         else # non lexicon symbol
           t.children.each do |c|
             if c.children.empty?
               exclude_tree = true
-              puts "Tree Removed"
               break
             end
           end
