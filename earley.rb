@@ -10,6 +10,7 @@ class EarleyParser
 
   def initialize grammar
     @grammar = grammar
+    @rule_class = EarleyState
   end
 
   # Parses a sentence, returning all possible parse trees
@@ -25,7 +26,7 @@ class EarleyParser
       [Grammar::RootSymbol],
       false)
 
-    dummy_state = EarleyState.new(dummy_rule)
+    dummy_state = @rule_class.new(dummy_rule)
     enqueue dummy_state, 0
 
     puts "Parsing sentence: #{sentence.to_s}"
@@ -109,7 +110,7 @@ private
   def predictor state
     rules = @grammar.find_by_head state.next_symbol
     rules.each do |r|
-      new_state = EarleyState.new r, state.final, state.final, 0
+      new_state = @rule_class.new r, state.final, state.final, 0
       new_state.generated_by = :predictor
       enqueue new_state, state.final
     end
@@ -118,7 +119,7 @@ private
   def scanner state, word
     rules = @grammar.rules.values.select { |r| r.lexicon && r.body[0] == word }
     rules.each do |r|
-      new_state = EarleyState.new r, state.final, state.final + 1, 1
+      new_state = @rule_class.new r, state.final, state.final + 1, 1
       new_state.generated_by = :scanner
       enqueue new_state, state.final + 1
     end
@@ -130,9 +131,10 @@ private
     waitings.each do |affected_state_index|
       affected_state = @chart[completed_state.start][affected_state_index]
 
-      new_state = EarleyState.new(
+      new_state = create_state(
         affected_state.rule, affected_state.start,
-        completed_state.final, affected_state.current + 1)
+        completed_state.final, affected_state.current + 1,
+        affected_state)
       new_state.generated_by = :completer
 
       # If the new state already exists, save its index
@@ -153,7 +155,6 @@ private
           [completed_state.final, completed_state_index]
 
         new_state.pointers = pointers
-        #@chart[completed_state.final] << new_state
         enqueue new_state, completed_state.final
       else # new state already exists
         old_state = @chart[completed_state.final][existing_state_index]
@@ -168,6 +169,17 @@ private
           [completed_state.final, completed_state_index]
       end
     end
+  end
+
+  def create_state rule, start, final, current, original_state
+    if @rule_class == EarleyState
+      state = @rule_class.new rule, start, final, current
+    else
+      state = @rule_class.new(rule, start, final, current, [],
+                original_state.bounds + [original_state.final])
+    end
+
+    state
   end
 
   def enqueue state, position

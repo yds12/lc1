@@ -1,6 +1,7 @@
 require './grammar_generator.rb' 
 require './corpus.rb' 
 require './earley.rb' 
+require './pearley.rb' 
 require './viterbi.rb'
 
 ModeEarley = 0
@@ -154,7 +155,7 @@ end
 def test_viterbi_correctness file
   corpus = Corpus.new file
   grammar = GrammarGenerator.generate corpus.trees
-  parser = EarleyParser.new grammar
+  parser = ProbEarleyParser.new grammar
   viterbi = Viterbi.new
 
   corpus.trees.sort!{|x,y| x.sentence.size <=> y.sentence.size}

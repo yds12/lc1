@@ -49,9 +49,12 @@ class Viterbi
     state.p
   end
 
-  def build_tree tree, state
+  def build_tree tree, state, blacklist = []
+    #gets # DEBUG
+    #puts state.str_refs # DEBUG
+
     return if state.nil?
-    state.p = 0 # Don't repeat states
+    state.p *= 0.01 # Don't repeat states
 
     # Terminal
     if state.pointers.empty?
@@ -62,16 +65,35 @@ class Viterbi
         
         max_state = nil
         max_prob = 0
+        max_p = nil
+
+        #puts blacklist.to_s # DEBUG
+        #puts state.pointers[pos].size
 
         state.pointers[pos].each do |p|
           st = get_state p
+
+          if st.rule.body.size == 1 && blacklist.include?(st.rule.body.first)
+            #puts "BLACKLIST" # DEBUG
+            st.p *= 0.01
+          end
+
           if st.p >= max_prob
             max_state = st
             max_prob = max_state.p
+            max_p = p # DEBUG
           end
         end
 
-        build_tree subtree, max_state
+        # Avoid long paths repeating the same variables
+        if max_state.pointers.size < 2
+          blacklist << max_state.rule.head 
+        else
+          blacklist = []
+        end
+
+        #puts max_p.to_s # DEBUG
+        build_tree subtree, max_state, blacklist
       end
     end
   end
