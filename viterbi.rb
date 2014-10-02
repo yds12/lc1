@@ -19,6 +19,7 @@ class Viterbi
     # Then, navigates through the most likely ones to build the
     # most likely parse tree
     build_tree tree, start_state
+    tree = tree.children[0].children[0]
     tree
   end
 
