@@ -13,8 +13,12 @@ class EarleyParser
     @rule_class = EarleyState
   end
 
-  # Parses a sentence, returning all possible parse trees
+  # Parses a sentence, returning true if it was accepted, false otherwise.
+  # The method also builds the Earley Chart, used to retrieve the possible
+  # parse trees
   def parse sentence
+    free_resources
+
     t0 = Time.new # DEBUG
     @n = sentence.size
     @chart = Array.new(@n + 1){ Array.new }
@@ -195,6 +199,12 @@ private
         @waiting[state.next_symbol][position] << (@chart[position].size - 1)
       end
     end
+  end
+
+  def free_resources
+    @chart.clear if @chart
+    @set_chart.clear if @set_chart
+    @waiting.clear if @waiting
   end
 
   # Recursively checks whether a tree is possible given an Earley state

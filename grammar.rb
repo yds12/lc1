@@ -13,7 +13,7 @@ class Grammar
   
   def add rule
     if @rules[rule]
-      @rules[rule].count += 1
+      @rules[rule].count += rule.count
     else
       @rules[rule] = rule
     end
@@ -21,6 +21,7 @@ class Grammar
 
   # Call this method after add all rules to calculate the parts of speech
   def complete
+    @pos = Set.new
     lex = @rules.values.select { |r| r.lexicon }
     @pos.merge lex.map{ |r| r.head }.uniq
 

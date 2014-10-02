@@ -9,6 +9,7 @@ ModeProbabilisticEarley = 1
 ModeEarleyCorrectness = 2
 ModeIncrementalEarley = 3
 ModeViterbiCorrectness = 4
+ModeEarleyAllLexicon = 5
 
 def test_earley_correctness file, slice_size, slice_number
   c = Corpus.new file
@@ -38,7 +39,7 @@ def test_earley_correctness file, slice_size, slice_number
   puts nil
 end
 
-def test_earley file
+def test_earley file, use_all_lexicon = false
   repetitions = 1
   training_frac = 0.90
 
@@ -49,6 +50,13 @@ def test_earley file
   exec_time = Array.new repetitions
 
   corpus = Corpus.new file
+
+  if use_all_lexicon
+    entire_grammar = GrammarGenerator.generate corpus.trees
+    lexicon = entire_grammar.rules.select{|r| r.lexicon}
+    puts "Total Lexicon size: #{lexicon.size}"
+  end
+
   training_last = (corpus.trees.size * training_frac).floor
 
   puts "Testing Earley algorithm..."
@@ -62,6 +70,18 @@ def test_earley file
     
     t0 = Time.new
     grammar = GrammarGenerator.generate training
+    puts "Rules: #{grammar.rules.size}"
+    puts "Lexicon rules: #{grammar.rules.select{|r| r.lexicon}.size}"
+
+    if use_all_lexicon
+      lexicon.values.each do |r|
+        grammar.add r
+      end
+
+      grammar.complete
+      puts "With all lexicon: #{grammar.rules.size}"
+    end
+
     training_time[iteration] = Time.now - t0
 
     t0 = Time.new
@@ -188,6 +208,8 @@ file = ARGV[1]
 
 if mode == ModeEarley
   test_earley file
+elsif mode == ModeEarleyAllLexicon
+  test_earley file, true
 elsif mode == ModeEarleyCorrectness
   slice_size = ARGV[2].to_i
   slice_number = ARGV[3].to_i
