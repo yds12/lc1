@@ -24,6 +24,7 @@ class EarleyParser
     @chart = Array.new(@n + 1){ Array.new }
     @set_chart = Array.new(@n + 1){ Hash.new }
     @waiting = Hash.new { |h, k| h[k] = Array.new(@chart.size) { Array.new } }
+    @exit_earley = false
 
     dummy_rule = GrammarRule.new(
       DummyStartSymbol,
@@ -36,10 +37,12 @@ class EarleyParser
     puts "Parsing sentence: #{sentence.to_s}"
     
     @chart.size.times do |i|
+      break if @exit_earley
       puts "calculating chart #{i}..."
       j = 0
 
       while j < @chart[i].size
+        break if @exit_earley
         cur_state = @chart[i][j]
 
         if cur_state.complete
@@ -122,11 +125,17 @@ private
 
   def scanner state, word
     rules = @grammar.rules.values.select { |r| r.lexicon && r.body[0] == word }
+    scan_fail rules, word if rules.empty?
+
     rules.each do |r|
       new_state = @rule_class.new r, state.final, state.final + 1, 1
       new_state.generated_by = :scanner
       enqueue new_state, state.final + 1
     end
+  end
+
+  def scan_fail rules, word
+    @exit_earley = true
   end
 
   def completer completed_state, completed_state_index
@@ -166,7 +175,7 @@ private
 
         # Adds the pointers of the affected state to the existing state
         affected_state.pointers.size.times do |i|
-          old_state.pointers[i] += affected_state.pointers[i]
+          old_state.pointers[i].merge affected_state.pointers[i]
         end
 
         old_state.pointers[affected_state.current] <<

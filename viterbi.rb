@@ -23,6 +23,8 @@ class Viterbi
     tree
   end
 
+private
+
   # Calculates the probability of this state, using the Viterbi
   # algorithm to evaluate the probability of all of its subtrees,
   # and choosing the most likely ones

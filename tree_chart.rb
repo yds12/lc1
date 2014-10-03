@@ -14,15 +14,15 @@ class TreeChart
 
   # Calculate precision, recall and F measure for bracketing and phrases
   # between two trees
-  def calculate_metrics tree1, tree2
+  def calculate_metrics parse_tree, correct_tree
     reset_metrics
-    if tree1.sentence.size != tree2.sentence.size
+    if parse_tree.sentence.size != correct_tree.sentence.size
       puts "WARNING: trees of different sizes!"
       return
     end
 
-    chart1 = to_chart tree1
-    chart2 = to_chart tree2
+    chart1 = to_chart parse_tree
+    chart2 = to_chart correct_tree
 
     calculate_metrics_charts chart1, chart2
   end
@@ -30,8 +30,6 @@ class TreeChart
   def print_chart tree
     sentence = tree.sentence
     chart = to_chart tree
-
-    puts chart.to_s
 
     chart.size.times do |i|
       j = chart.size - i - 1
@@ -120,9 +118,6 @@ private
     chart_parse.each { |v| arrp += v }
     arrg = []
     chart_goal.each { |v| arrg += v }
-
-    puts arrp.to_s
-    puts arrg.to_s
 
     arrp.size.times do |i|
       cellp = arrp[i]
