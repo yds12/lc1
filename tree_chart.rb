@@ -1,17 +1,8 @@
+require './metrics.rb'
+
 # Converts a tree to a chart, and calculates the precision
 # and recall between two charts
 class TreeChart
-  # Several measures:
-  # Precision, recall and F measure for bracketing, and for phrases;
-  # Number of constituents in both trees, in the parse tree, and in the
-  # correct tree;
-  # Number of phrases in both trees, in the parse tree, and in the
-  # correct tree.
-  attr_reader :bracketing_p, :bracketing_r, :bracketing_f,
-    :phrasal_p, :phrasal_r, :phrasal_f,
-    :b_both, :b_parse, :b_goal,
-    :p_both, :p_parse, :p_goal
-
   # Calculate precision, recall and F measure for bracketing and phrases
   # between two trees
   def calculate_metrics parse_tree, correct_tree
@@ -25,6 +16,7 @@ class TreeChart
     chart2 = to_chart correct_tree
 
     calculate_metrics_charts chart1, chart2
+    metrics
   end
 
   def print_chart tree
@@ -54,6 +46,29 @@ class TreeChart
   end
 
 private
+
+  # Returns all the metrics in an object
+  def metrics
+    m = Metrics.new
+    m.bracketing_p = @bracketing_p
+    m.bracketing_r = @bracketing_r
+    m.bracketing_f = @bracketing_f
+
+    m.phrasal_p = @phrasal_p
+    m.phrasal_r = @phrasal_r
+    m.phrasal_f = @phrasal_f
+
+    m.b_both = @b_both
+    m.b_parse = @b_parse
+    m.b_goal = @b_goal
+
+    m.p_both = @p_both
+    m.p_parse = @p_parse
+    m.p_goal = @p_goal
+
+    return m
+  end
+
   def reset_metrics
     @bracketing_p = 0.0
     @bracketing_r = 0.0

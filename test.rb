@@ -136,7 +136,7 @@ class Test
   end
 
   def test_pearley file
-    training_frac = 0.9975
+    training_frac = 0.99
     corpus = Corpus.new file
     training_last = (corpus.trees.size * training_frac).floor
 
@@ -165,8 +165,20 @@ class Test
     t0 = Time.new
     parser = ProbEarleyParser.new grammar
 
+    metrics = []
+    failures = 0
+
     testing.each do |tree|
-      recognize = parser.parse tree.sentence
+      begin
+        recognize = parser.parse tree.sentence
+      rescue => ex
+        puts "FAILURE"
+        puts ex.message
+        print ex.backtrace.join "\n"
+        puts nil
+        recognize = false
+        failures += 1
+      end
 
       accept_tree = false
 
@@ -180,21 +192,79 @@ class Test
         end
       end
 
-      parse_tree = viterbi.path parser
+      parse_tree = viterbi.path parser if recognize
       test_time += Time.now - t0
 
-      # Calculate metrics
-      tree_chart.calculate_metrics parse_tree, tree
+      if recognize
+        # Calculate metrics
+        m = tree_chart.calculate_metrics parse_tree, tree
+        metrics << m
 
-      puts "Bracketing precision: #{tree_chart.bracketing_p}"
-      puts "Bracketing recall: #{tree_chart.bracketing_r}"
-      puts "Bracketing F measure: #{tree_chart.bracketing_f}"
-      puts "Phrasal precision: #{tree_chart.phrasal_p}"
-      puts "Phrasal recall: #{tree_chart.phrasal_r}"
-      puts "Phrasal F measure: #{tree_chart.phrasal_f}"
+        puts "Bracketing precision: #{m.bracketing_p}"
+        puts "Bracketing recall: #{m.bracketing_r}"
+        puts "Bracketing F measure: #{m.bracketing_f}"
+        puts "Phrasal precision: #{m.phrasal_p}"
+        puts "Phrasal recall: #{m.phrasal_r}"
+        puts "Phrasal F measure: #{m.phrasal_f}"
+      end
 
       t0 = Time.new
     end
+
+    # Calculate total metrics
+    n = testing.size
+
+    # bracketing averages
+    avg_b_prec = metrics.inject(0.0){|sum,el| sum + el.bracketing_p} / n
+    avg_b_rec = metrics.inject(0.0){|sum,el| sum + el.bracketing_r} / n
+    pr = avg_b_prec + avg_b_rec
+    avg_b_f = pr > 0 ? (2 * avg_b_prec * avg_b_rec) / pr : 0
+
+    # phrasal averages
+    avg_p_prec = metrics.inject(0.0){|sum,el| sum + el.phrasal_p} / n
+    avg_p_rec = metrics.inject(0.0){|sum,el| sum + el.phrasal_r} / n
+    pr = avg_p_prec + avg_p_rec
+    avg_p_f = pr > 0 ? (2 * avg_p_prec * avg_p_rec) / pr : 0
+
+    # bracketing overalls
+    b_both = metrics.inject(0){|sum,el| sum + el.b_both}
+    b_parse = metrics.inject(0){|sum,el| sum + el.b_parse}
+    b_goal = metrics.inject(0){|sum,el| sum + el.b_goal}
+
+    overall_b_prec = b_both.to_f/(b_both + b_parse)
+    gb = b_goal + b_both
+    overall_b_rec = gb > 0 ? b_both.to_f/gb : 1.0
+    pr = overall_b_prec + overall_b_rec
+    overall_b_f = pr > 0 ? (2 * overall_b_prec * overall_b_rec)/pr : 0.0
+
+    # phrasal overalls
+    p_both = metrics.inject(0){|sum,el| sum + el.p_both}
+    p_parse = metrics.inject(0){|sum,el| sum + el.p_parse}
+    p_goal = metrics.inject(0){|sum,el| sum + el.p_goal}
+
+    overall_p_prec = p_both.to_f/(p_both + p_parse)
+    gb = p_goal + p_both
+    overall_p_rec = gb > 0 ? p_both.to_f/gb : 1.0
+    pr = overall_p_prec + overall_p_rec
+    overall_p_f = pr > 0 ? (2 * overall_p_prec * overall_p_rec)/pr : 0.0
+
+    puts nil
+    puts "FINAL RESULTS"
+    puts "Training trees: #{training.size}"
+    puts "Total trees tested: #{n}"
+    puts "Avg. Bracketing Precision: #{avg_b_prec}"
+    puts "Avg. Bracketing Recall: #{avg_b_rec}"
+    puts "Avg. Bracketing F1: #{avg_b_f}"
+    puts "Avg. Phrasal Precision: #{avg_p_prec}"
+    puts "Avg. Phrasal Recall: #{avg_p_rec}"
+    puts "Avg. Phrasal F1: #{avg_p_f}"
+    puts "Overall Bracketing Precision: #{overall_b_prec}"
+    puts "Overall Bracketing Recall: #{overall_b_rec}"
+    puts "Overall Bracketing F1: #{overall_b_f}"
+    puts "Overall Phrasal Precision: #{overall_p_prec}"
+    puts "Overall Phrasal Recall: #{overall_p_rec}"
+    puts "Overall Phrasal F1: #{overall_p_f}"
+    puts "Failures: #{failures}"
   end
 
   def test_incremental_earley file

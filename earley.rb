@@ -158,11 +158,11 @@ private
         pointers = []
 
         # Copies the pointers of the affected state
-        affected_state.pointers.size.times do |i|
-          pointers[i] = affected_state.pointers[i].clone
+        affected_state.pointers.each do |p|
+          pointers << p.clone
         end
 
-        pointers << Set.new if pointers.size < affected_state.current + 1
+        pointers << Set.new
 
         pointers[affected_state.current] <<
           [completed_state.final, completed_state_index]

@@ -7,11 +7,6 @@ class ProbEarleyState < EarleyState
     super rule, start, final, current, pointers
   end
 
-  def str_refs
-    @str_refs = 
-      "#{@rule.str} | #{@current} | #{@start}, #{@final}, #{@bounds.to_s}, #{str_pointers}"
-  end
-
 private
 
   def calculate_attrs

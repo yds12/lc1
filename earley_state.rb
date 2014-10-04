@@ -31,8 +31,7 @@ class EarleyState
   end
 
   def str_refs
-    @str_refs = 
-      "#{@rule.str} | #{@current} | #{@start}, #{@final}, #{str_pointers}"
+    @str_refs = "#{@str}, #{str_pointers}"
   end
   
   def str_pointers
