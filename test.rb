@@ -136,7 +136,7 @@ class Test
   end
 
   def test_pearley file
-    training_frac = 0.99
+    training_frac = 0.98
     corpus = Corpus.new file
     training_last = (corpus.trees.size * training_frac).floor
 
@@ -168,7 +168,7 @@ class Test
     metrics = []
     failures = 0
 
-    testing.each do |tree|
+    testing.each_with_index do |tree, i|
       begin
         recognize = parser.parse tree.sentence
       rescue => ex
@@ -208,63 +208,67 @@ class Test
         puts "Phrasal F measure: #{m.phrasal_f}"
       end
 
+      # Calculate total metrics
+      n = i + 1 
+
+      # bracketing averages
+      avg_b_prec = metrics.inject(0.0){|sum,el| sum + el.bracketing_p} / n
+      avg_b_rec = metrics.inject(0.0){|sum,el| sum + el.bracketing_r} / n
+      pr = avg_b_prec + avg_b_rec
+      avg_b_f = pr > 0 ? (2 * avg_b_prec * avg_b_rec) / pr : 0
+
+      # phrasal averages
+      avg_p_prec = metrics.inject(0.0){|sum,el| sum + el.phrasal_p} / n
+      avg_p_rec = metrics.inject(0.0){|sum,el| sum + el.phrasal_r} / n
+      pr = avg_p_prec + avg_p_rec
+      avg_p_f = pr > 0 ? (2 * avg_p_prec * avg_p_rec) / pr : 0
+
+      # bracketing overalls
+      b_both = metrics.inject(0){|sum,el| sum + el.b_both}
+      b_parse = metrics.inject(0){|sum,el| sum + el.b_parse}
+      b_goal = metrics.inject(0){|sum,el| sum + el.b_goal}
+
+      overall_b_prec = b_both.to_f/(b_both + b_parse)
+      gb = b_goal + b_both
+      overall_b_rec = gb > 0 ? b_both.to_f/gb : 1.0
+      pr = overall_b_prec + overall_b_rec
+      overall_b_f = pr > 0 ? (2 * overall_b_prec * overall_b_rec)/pr : 0.0
+
+      # phrasal overalls
+      p_both = metrics.inject(0){|sum,el| sum + el.p_both}
+      p_parse = metrics.inject(0){|sum,el| sum + el.p_parse}
+      p_goal = metrics.inject(0){|sum,el| sum + el.p_goal}
+
+      overall_p_prec = p_both.to_f/(p_both + p_parse)
+      gb = p_goal + p_both
+      overall_p_rec = gb > 0 ? p_both.to_f/gb : 1.0
+      pr = overall_p_prec + overall_p_rec
+      overall_p_f = pr > 0 ? (2 * overall_p_prec * overall_p_rec)/pr : 0.0
+
+      puts nil
+      puts "GENERAL RESULTS UNTIL NOW"
+      puts "Training trees: #{training.size}"
+      puts "Total trees tested: #{n}"
+      puts "Avg. Bracketing Precision: #{avg_b_prec}"
+      puts "Avg. Bracketing Recall: #{avg_b_rec}"
+      puts "Avg. Bracketing F1: #{avg_b_f}"
+      puts "Avg. Phrasal Precision: #{avg_p_prec}"
+      puts "Avg. Phrasal Recall: #{avg_p_rec}"
+      puts "Avg. Phrasal F1: #{avg_p_f}"
+      puts "Overall Bracketing Precision: #{overall_b_prec}"
+      puts "Overall Bracketing Recall: #{overall_b_rec}"
+      puts "Overall Bracketing F1: #{overall_b_f}"
+      puts "Overall Phrasal Precision: #{overall_p_prec}"
+      puts "Overall Phrasal Recall: #{overall_p_rec}"
+      puts "Overall Phrasal F1: #{overall_p_f}"
+      puts "Failures: #{failures}"
+      puts nil
+
+      # Flush output buffers
+      $stdout.flush
+
       t0 = Time.new
     end
-
-    # Calculate total metrics
-    n = testing.size
-
-    # bracketing averages
-    avg_b_prec = metrics.inject(0.0){|sum,el| sum + el.bracketing_p} / n
-    avg_b_rec = metrics.inject(0.0){|sum,el| sum + el.bracketing_r} / n
-    pr = avg_b_prec + avg_b_rec
-    avg_b_f = pr > 0 ? (2 * avg_b_prec * avg_b_rec) / pr : 0
-
-    # phrasal averages
-    avg_p_prec = metrics.inject(0.0){|sum,el| sum + el.phrasal_p} / n
-    avg_p_rec = metrics.inject(0.0){|sum,el| sum + el.phrasal_r} / n
-    pr = avg_p_prec + avg_p_rec
-    avg_p_f = pr > 0 ? (2 * avg_p_prec * avg_p_rec) / pr : 0
-
-    # bracketing overalls
-    b_both = metrics.inject(0){|sum,el| sum + el.b_both}
-    b_parse = metrics.inject(0){|sum,el| sum + el.b_parse}
-    b_goal = metrics.inject(0){|sum,el| sum + el.b_goal}
-
-    overall_b_prec = b_both.to_f/(b_both + b_parse)
-    gb = b_goal + b_both
-    overall_b_rec = gb > 0 ? b_both.to_f/gb : 1.0
-    pr = overall_b_prec + overall_b_rec
-    overall_b_f = pr > 0 ? (2 * overall_b_prec * overall_b_rec)/pr : 0.0
-
-    # phrasal overalls
-    p_both = metrics.inject(0){|sum,el| sum + el.p_both}
-    p_parse = metrics.inject(0){|sum,el| sum + el.p_parse}
-    p_goal = metrics.inject(0){|sum,el| sum + el.p_goal}
-
-    overall_p_prec = p_both.to_f/(p_both + p_parse)
-    gb = p_goal + p_both
-    overall_p_rec = gb > 0 ? p_both.to_f/gb : 1.0
-    pr = overall_p_prec + overall_p_rec
-    overall_p_f = pr > 0 ? (2 * overall_p_prec * overall_p_rec)/pr : 0.0
-
-    puts nil
-    puts "FINAL RESULTS"
-    puts "Training trees: #{training.size}"
-    puts "Total trees tested: #{n}"
-    puts "Avg. Bracketing Precision: #{avg_b_prec}"
-    puts "Avg. Bracketing Recall: #{avg_b_rec}"
-    puts "Avg. Bracketing F1: #{avg_b_f}"
-    puts "Avg. Phrasal Precision: #{avg_p_prec}"
-    puts "Avg. Phrasal Recall: #{avg_p_rec}"
-    puts "Avg. Phrasal F1: #{avg_p_f}"
-    puts "Overall Bracketing Precision: #{overall_b_prec}"
-    puts "Overall Bracketing Recall: #{overall_b_rec}"
-    puts "Overall Bracketing F1: #{overall_b_f}"
-    puts "Overall Phrasal Precision: #{overall_p_prec}"
-    puts "Overall Phrasal Recall: #{overall_p_rec}"
-    puts "Overall Phrasal F1: #{overall_p_f}"
-    puts "Failures: #{failures}"
   end
 
   def test_incremental_earley file

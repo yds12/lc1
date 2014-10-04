@@ -39,6 +39,9 @@ class EarleyParser
     @chart.size.times do |i|
       break if @exit_earley
       puts "calculating chart #{i}..."
+
+      # Flush output buffers
+      $stdout.flush
       j = 0
 
       while j < @chart[i].size
