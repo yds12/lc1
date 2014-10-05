@@ -6,6 +6,28 @@ class Grammar
 
   attr_reader :rules, :pos, :rules_by_head, :pos_probs
 
+  def self.from_file file
+    grammar = Grammar.new
+
+    File.open(file, 'r') do |f|
+      while line = f.gets
+        rule = GrammarRule.from_str line
+        grammar.add rule 
+      end
+    end
+
+    grammar.complete
+    grammar
+  end
+
+  def to_file file
+    File.open(file, 'w') do |f|
+      @rules.values.each do |rule|
+        f.puts rule.plain_str
+      end
+    end
+  end
+
   def initialize
     @rules = Hash.new
     @pos = Set.new

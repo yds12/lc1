@@ -181,6 +181,13 @@ private
           old_state.pointers[i].merge affected_state.pointers[i]
         end
 
+        if affected_state.current > old_state.pointers.size - 1
+          puts "affected: #{affected_state.str_refs}"
+          puts "old: #{old_state.str_refs}"
+          puts "completed: #{completed_state.str_refs}"
+          raise 'Old state has less pointers than the affected state'
+        end
+
         old_state.pointers[affected_state.current] <<
           [completed_state.final, completed_state_index]
       end
