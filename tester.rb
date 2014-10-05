@@ -1,11 +1,11 @@
 require './test.rb'
 
-ModeEarley = 0
-ModeProbabilisticEarley = 1
-ModeEarleyCorrectness = 2
-ModeIncrementalEarley = 3
-ModeViterbiCorrectness = 4
-ModeEarleyAllLexicon = 5
+ModeEarley = 1
+ModeProbabilisticEarley = 2
+ModeEarleyAllLexicon = 3
+ModeEarleyCorrectness = 4
+ModeViterbiCorrectness = 5
+ModeIncrementalEarley = 6
 
 mode = ARGV[0].to_i
 file = ARGV[1]
